@@ -31,6 +31,6 @@ To see an example, please run the `example.py` file.
 
 ## Installing Dependencies
 
-This code reqires Autograd (https://github.com/HIPS/autograd) to be installed.
+This code depends on `autograd` (https://github.com/HIPS/autograd) which can be installed using
 
     pip install autograd
