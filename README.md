@@ -28,3 +28,9 @@ To see an example, please run the `example.py` file.
     
     # Prediction
     mean_star, var_star = pgp.predict(X_star)
+
+## Installing Dependencies
+
+This code reqires Autograd (https://github.com/HIPS/autograd) to be installed.
+
+    pip install autograd
