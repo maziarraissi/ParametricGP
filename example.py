@@ -49,6 +49,7 @@ if __name__ == "__main__":
         
         y_star = Normalize(y_star, y_m, y_s)
     
+    # Model creation
     pgp = PGP(X, y, M = 10, max_iter = 6000, N_batch = 1)
         
     # Training
