@@ -17,6 +17,8 @@ For more details, please refer to the following: (https://arxiv.org/abs/1704.031
 
 ## Example
 
+To see an example, please run the `example.py` file.
+
     # let X, y be the loaded data
     # Model creation:
     pgp = PGP(X,y, M = 10, max_iter = 6000, N_batch = 1)
