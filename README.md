@@ -31,6 +31,8 @@ To see an example, please run the `example.py` file.
 
 ## Installing Dependencies
 
-This code depends on `autograd` (https://github.com/HIPS/autograd) which can be installed using
+This code depends on `autograd` (https://github.com/HIPS/autograd), `scikit-learn` (http://scikit-learn.org/stable/index.html), and `pyDOE` (https://pythonhosted.org/pyDOE/) which can be installed using
 
     pip install autograd
+    pip install -U scikit-learn
+    pip install --upgrade pyDOE
