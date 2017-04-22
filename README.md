@@ -14,3 +14,15 @@ For more details, please refer to the following: (https://arxiv.org/abs/1704.031
       journal={arXiv preprint arXiv:1704.03144},
       year={2017}
     }
+
+## Example
+
+    # let X, y be the loaded data
+    # Model creation:
+    pgp = PGP(X,y, M = 10, max_iter = 6000, N_batch = 1)
+    
+    # Training
+    pgp.train()
+    
+    # Prediction
+    mean_star, var_star = pgp.predict(X_star)
