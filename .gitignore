@@ -1,0 +1,4 @@
+*.pickle
+*.zip
+*.mat
+__pycache__/
