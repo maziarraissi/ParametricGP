@@ -17,7 +17,7 @@ For more details, please refer to the following: (https://arxiv.org/abs/1704.031
 
 ## Example
 
-To see an example, please run the `one_dimensional_example.py` file in the folder `/PGPs_autograd/Examples/` or `/PGPs_tensorflow/Examples/`.
+To see an example, please run the file `one_dimensional_example.py` in the folder `/PGPs_autograd/Examples/` or `/PGPs_tensorflow/Examples/`.
 
     # let X, y be the loaded data
     # Model creation:
