@@ -8,6 +8,7 @@ import autograd.numpy as np
 from autograd import value_and_grad
 from sklearn.cluster import KMeans
 from Utilities import kernel, fetch_minibatch, stochastic_update_Adam
+import timeit
 
 class PGP:
     def __init__(self, X, y, M=10, max_iter = 2000, N_batch = 1, 
@@ -44,37 +45,39 @@ class PGP:
         # Adam optimizer parameters
         self.mt_hyp = np.zeros(hyp.shape)
         self.vt_hyp = np.zeros(hyp.shape)
-        self.lrate = lrate
-        
+        self.lrate = lrate        
         
     def train(self):
         print("Total number of parameters: %d" % (self.hyp.shape[0]))
         
         # Gradients from autograd 
-        UB = value_and_grad(self.likelihood_UB)
+        NLML = value_and_grad(self.likelihood)
         
+        start_time = timeit.default_timer()
         for i in range(1,self.max_iter+1):
             # Fetch minibatch
             self.X_batch, self.y_batch = fetch_minibatch(self.X,self.y,self.N_batch) 
             
-            # Compute likelihood_UB and gradients 
-            NLML, D_NLML = UB(self.hyp)
+            # Compute likelihood and gradients 
+            nlml, D_NLML = NLML(self.hyp)
             
             # Update hyper-parameters
             self.hyp, self.mt_hyp, self.vt_hyp = stochastic_update_Adam(self.hyp, D_NLML, self.mt_hyp, self.vt_hyp, self.lrate, i)
             
             if i % self.monitor_likelihood == 0:
-                print("Iteration: %d, likelihood_UB: %.2f" % (i, NLML))
-        
-        NLML, D_NLML = UB(self.hyp)
+                elapsed = timeit.default_timer() - start_time
+                print('Iteration: %d, NLML: %.2f, Time: %.2f' % (i, nlml, elapsed))
+                start_time = timeit.default_timer()
+
+        nlml, D_NLML = NLML(self.hyp)
     
-    def likelihood_UB(self, hyp): 
+    def likelihood(self, hyp): 
         M = self.M 
         Z = self.Z
         m = self.m
-        S = self.S 
+        S = self.S
         X_batch = self.X_batch
-        y_batch = self.y_batch 
+        y_batch = self.y_batch
         jitter = self.jitter 
         jitter_cov = self.jitter_cov
         N = X_batch.shape[0]
@@ -85,9 +88,9 @@ class PGP:
         
         # Compute K_u_inv
         K_u = kernel(Z, Z, hyp[:-1])    
-        K_u_inv = np.linalg.solve(K_u + np.eye(M)*jitter_cov, np.eye(M))
-    #    L = np.linalg.cholesky(K_u  + np.eye(M)*jitter_cov)    
-    #    K_u_inv = np.linalg.solve(np.transpose(L), np.linalg.solve(L,np.eye(M)))
+        # K_u_inv = np.linalg.solve(K_u + np.eye(M)*jitter_cov, np.eye(M))
+        L = np.linalg.cholesky(K_u + np.eye(M)*jitter_cov)    
+        K_u_inv = np.linalg.solve(L.T, np.linalg.solve(L,np.eye(M)))
         
         self.K_u_inv = K_u_inv
           
@@ -102,26 +105,27 @@ class PGP:
                 np.matmul(Alpha.T, np.matmul(S,Alpha))
         
         COV_inv = np.linalg.solve(COV  + np.eye(N)*sigma_n + np.eye(N)*jitter, np.eye(N))
-    #    L = np.linalg.cholesky(COV  + np.eye(N)*sigma_n + np.eye(N)*jitter) 
-    #    COV_inv = np.linalg.solve(np.transpose(L), np.linalg.solve(L,np.eye(N)))
+        # L = np.linalg.cholesky(COV  + np.eye(N)*sigma_n + np.eye(N)*jitter) 
+        # COV_inv = np.linalg.solve(np.transpose(L), np.linalg.solve(L,np.eye(N)))
         
         # Compute cov(Z, X)
         cov_ZX = np.matmul(S,Alpha)
         
         # Update m and S
         alpha = np.matmul(COV_inv, cov_ZX.T)
-        self.m = m + np.matmul(cov_ZX, np.matmul(COV_inv, y_batch-MU))    
-        self.S = S - np.matmul(cov_ZX, alpha)
-                
-        # Compute NLML        
-        Beta = y_batch - MU
-        NLML_1 = np.matmul(Beta.T, Beta)/(2.0*sigma_n*N)
+        m = m + np.matmul(cov_ZX, np.matmul(COV_inv, y_batch-MU))    
+        S = S - np.matmul(cov_ZX, alpha)
         
-        NLML_2 = np.trace(COV)/(2.0*sigma_n)
-        NLML_3 = N*logsigma_n/2.0 + N*np.log(2.0*np.pi)/2.0
-        NLML = NLML_1 + NLML_2 + NLML_3
+        self.m = m
+        self.S = S
+        
+        # Compute NLML                
+        K_u_inv_m = np.matmul(K_u_inv,m)
+        NLML = 0.5*np.matmul(m.T,K_u_inv_m) + np.sum(np.log(np.diag(L))) + 0.5*np.log(2.*np.pi)*M
         
         return NLML[0,0]
+    
+    
 
     def predict(self, X_star):
         Z = self.Z
@@ -153,7 +157,7 @@ class PGP:
             Alpha = np.matmul(K_u_inv,psi)
             cov = kernel(X_star[idx_1:idx_2,:], X_star[idx_1:idx_2,:], hyp[:-1]) - \
                     np.matmul(psi.T, np.matmul(K_u_inv,psi)) + np.matmul(Alpha.T, np.matmul(S,Alpha))
-            var = np.abs(np.diag(cov)) + np.exp(hyp[-1])
+            var = np.abs(np.diag(cov))# + np.exp(hyp[-1])
             
             var_star[idx_1:idx_2,0] = var
     
@@ -172,7 +176,7 @@ class PGP:
         Alpha = np.matmul(K_u_inv,psi)
         cov = kernel(X_star[idx_1:idx_2,:], X_star[idx_1:idx_2,:], hyp[:-1]) - \
                 np.matmul(psi.T, np.matmul(K_u_inv,psi)) + np.matmul(Alpha.T, np.matmul(S,Alpha))
-        var = np.abs(np.diag(cov)) + np.exp(hyp[-1])
+        var = np.abs(np.diag(cov))# + np.exp(hyp[-1])
         
         var_star[idx_1:idx_2,0] = var
         

@@ -4,6 +4,9 @@
 @author: Maziar Raissi
 """
 
+import sys
+sys.path.insert(0, '../PGP/')
+
 import autograd.numpy as np
 import matplotlib.pyplot as plt
 from pyDOE import lhs
@@ -12,6 +15,7 @@ from Utilities import Normalize
 
 if __name__ == "__main__":
     
+    np.random.seed(12345)
     # Setup
     N = 6000
     D = 1
@@ -24,7 +28,7 @@ if __name__ == "__main__":
     
     # Generate traning data
     def f(x):
-        return x*np.sin(4*np.pi*x)    
+        return x*np.sin(4*np.pi*x)
     X = lb + (ub-lb)*lhs(D, N)
     y = f(X) + noise*np.random.randn(N,1)
     
@@ -50,7 +54,9 @@ if __name__ == "__main__":
         y_star = Normalize(y_star, y_m, y_s)
     
     # Model creation
-    pgp = PGP(X, y, M = 10, max_iter = 6000, N_batch = 1)
+    M = 8
+    pgp = PGP(X, y, M, max_iter = 6000, N_batch = 1,
+              monitor_likelihood = 10, lrate = 1e-3)
         
     # Training
     pgp.train()
@@ -61,11 +67,29 @@ if __name__ == "__main__":
     # Plot Results
     Z = pgp.Z
     m = pgp.m
-    plt.figure(1)
-    plt.plot(X,y,'b+',alpha=0.1)
-    plt.plot(Z,m, 'ro', alpha=1)
-    plt.plot(X_star, y_star, 'b-')
-    plt.plot(X_star, mean_star, 'r--')
+    plt.figure(figsize=(10,10))
+    plt.rc('text', usetex=True)
+    plt.rcParams.update({'font.size': 15})
+    plt.subplot(2, 1, 1)
+    plt.plot(X,y,'b+',alpha=1)
+    plt.xlabel('$x$')
+    plt.ylabel('$f(x)$')
+    plt.title('(A)')
+    plt.legend(['%d traning Data' % N], loc='lower left')
+
+    
+    plt.subplot(2, 1, 2)
+    plt.plot(Z,m, 'ro', alpha=1, markersize=14)
+    plt.plot(X_star, y_star, 'b-', linewidth=2)
+    plt.plot(X_star, mean_star, 'r--', linewidth=2)
     lower = mean_star - 2.0*np.sqrt(var_star)
     upper = mean_star + 2.0*np.sqrt(var_star)
     plt.fill_between(X_star.flatten(), lower.flatten(), upper.flatten(), facecolor='orange', alpha=0.5)
+    plt.xlabel('$x$')
+    plt.ylabel('$f(x), \overline{f}(x)$')
+    plt.title('(B)')
+    plt.tight_layout()
+    plt.legend(['%d hypothetical data' % M, '$f(x)$', '$\overline{f}(x)$', 'Two standard deviations'], loc='lower left')
+
+    
+    plt.savefig('../Fig/OneDimensional.eps', format='eps', dpi=1000)
