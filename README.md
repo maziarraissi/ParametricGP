@@ -17,11 +17,11 @@ For more details, please refer to the following: (https://arxiv.org/abs/1704.031
 
 ## Example
 
-To see an example, please run the `example.py` file.
+To see an example, please run the `one_dimensional_example.py` file in the folder `/PGPs_autograd/Examples/` or `/PGPs_tensorflow/Examples/`.
 
     # let X, y be the loaded data
     # Model creation:
-    pgp = PGP(X, y, M = 10, max_iter = 6000, N_batch = 1)
+    pgp = PGP(X, y, M = 8, max_iter = 6000, N_batch = 1)
     
     # Training
     pgp.train()
@@ -31,8 +31,12 @@ To see an example, please run the `example.py` file.
 
 ## Installing Dependencies
 
-This code depends on `autograd` (https://github.com/HIPS/autograd), `scikit-learn` (http://scikit-learn.org/stable/index.html), and `pyDOE` (https://pythonhosted.org/pyDOE/) which can be installed using
+This code depends on `autograd` (https://github.com/HIPS/autograd), `tensorflow` (https://www.tensorflow.org/), `numpy` (http://www.numpy.org/), `scikit-learn` (http://scikit-learn.org/stable/index.html), `matplotlib` (https://matplotlib.org/), `pyDOE` (https://pythonhosted.org/pyDOE/), and `pandas` (http://pandas.pydata.org/) which can be installed using
 
     pip install autograd
+    pip install tensorflow
+    pip install numpy
     pip install -U scikit-learn
+    pip install matplotlib
     pip install --upgrade pyDOE
+    pip install pandas
