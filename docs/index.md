@@ -117,7 +117,7 @@ This work introduced the concept of [parametric Gaussian processes](https://arxi
 
 **Acknowledgements**
 
-This work received support by the DARPA EQUiPS grant N66001-15-2-4055 and the AFOSR grant FA9550-17-1-0013. All data and codes are publicly available on [GitHub](https://github.com/maziarraissi/ParametricGP-in-Python).
+This work received support by the DARPA EQUiPS grant N66001-15-2-4055 and the AFOSR grant FA9550-17-1-0013. All data and codes are publicly available on [GitHub](https://github.com/maziarraissi/ParametricGP).
 
 * * * * *
 
